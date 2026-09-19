@@ -1,0 +1,14 @@
+# Windows系统临时文件
+Thumbs.db
+Desktop.ini
+*.url
+*.ico
+!京东快运计算器.ico
+
+# VSCode / 编辑器缓存
+.vscode/
+*.log
+*.tmp
+
+# Mac系统文件
+.DS_Store

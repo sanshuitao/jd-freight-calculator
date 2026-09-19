@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>京东快运运费计算器</title>
+<meta name="description" content="北京始发·重货标快速报价工具：体积重、保价、上楼费一站式计算，历史记录本地保存，手机微信内打开即用。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="京东快运运费计算器">
+<meta property="og:description" content="北京始发·重货标快·体积重/保价/上楼费一站式计算，微信打开即用。">
+<link rel="icon" type="image/png" href="京东快运计算器.png">
+<link rel="shortcut icon" href="京东快运计算器.ico">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    min-height: 100vh;
+    padding-bottom: 30px;
+  }
+  .header {
+    background: linear-gradient(135deg, #E1251B 0%, #FF4D4F 100%);
+    color: #fff;
+    padding: 20px 16px 24px;
+    text-align: center;
+  }
+  .header h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .header p { font-size: 12px; opacity: 0.85; }
+  .container { padding: 12px; max-width: 480px; margin: 0 auto; }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #E1251B;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title .left { display: flex; align-items: center; }
+  .card-title .left::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    background: #E1251B;
+    border-radius: 2px;
+    margin-right: 8px;
+  }
+  .card-title .count { font-size: 12px; color: #999; font-weight: normal; }
+  .form-group { margin-bottom: 14px; }
+  .form-group:last-child { margin-bottom: 0; }
+  .form-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .form-label .required { color: #E1251B; margin-right: 2px; }
+  .form-label .optional { color: #999; margin-left: 4px; font-size: 11px; }
+  select, input[type="number"], input[type="text"] {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 15px;
+    color: #333;
+    background: #fafafa;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  select:focus, input:focus { border-color: #E1251B; background: #fff; }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+  .input-with-unit { position: relative; }
+  .input-with-unit .unit {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: #999;
+    pointer-events: none;
+  }
+  .route-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+    margin-bottom: 14px;
+    background: #fff5f5;
+    border-radius: 8px;
+  }
+  .route-info .city { font-size: 15px; font-weight: 600; color: #333; }
+  .route-info .arrow { margin: 0 16px; color: #E1251B; font-size: 18px; }
+  .route-info .tag {
+    font-size: 11px; color: #E1251B; background: #ffe8e8;
+    padding: 2px 6px; border-radius: 4px; margin-left: 6px;
+  }
+
+  /* 体积件数多行输入 */
+  .volume-rows { margin-bottom: 10px; }
+  .volume-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 8px;
+    background: #fafafa;
+    border-radius: 8px;
+  }
+  .volume-row .field { flex: 1; }
+  .volume-row .field input {
+    height: 36px;
+    font-size: 13px;
+    padding: 0 8px;
+    text-align: center;
+  }
+  .volume-row .field label {
+    display: block;
+    font-size: 10px;
+    color: #999;
+    text-align: center;
+    margin-bottom: 2px;
+  }
+  .volume-row .del-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: #ffeceb;
+    color: #E1251B;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .volume-row .del-btn:active { background: #ffd6d4; }
+  .add-row-btn {
+    width: 100%;
+    height: 36px;
+    border: 1px dashed #E1251B;
+    background: #fff5f5;
+    color: #E1251B;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .add-row-btn:active { background: #ffe8e8; }
+  .volume-summary {
+    display: flex;
+    justify-content: space-between;
+    background: #f0f7ff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #555;
+  }
+  .volume-summary .item { text-align: center; flex: 1; }
+  .volume-summary .item .label { color: #999; margin-bottom: 2px; }
+  .volume-summary .item .value { font-weight: 600; color: #1890ff; font-size: 14px; }
+  .weight-compare {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.8;
+    display: none;
+  }
+  .weight-compare.show { display: block; }
+  .weight-compare .highlight { color: #E1251B; font-weight: 600; }
+
+  /* 开关样式 */
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+  .switch-row + .switch-row { border-top: 1px solid #f0f0f0; }
+  .switch-label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #333;
+  }
+  .switch-label .icon {
+    width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    margin-right: 10px; font-size: 15px;
+  }
+  .icon-insure { background: #fff3e0; color: #ff9800; }
+  .icon-stairs { background: #e3f2fd; color: #2196f3; }
+  .switch-label .desc { font-size: 11px; color: #999; margin-top: 2px; }
+  .switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #ddd; border-radius: 26px; transition: 0.3s;
+  }
+  .slider::before {
+    content: ''; position: absolute;
+    height: 20px; width: 20px; left: 3px; bottom: 3px;
+    background: #fff; border-radius: 50%; transition: 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .switch input:checked + .slider { background: #E1251B; }
+  .switch input:checked + .slider::before { transform: translateX(20px); }
+  .extra-options { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+  .extra-options.open { max-height: 500px; }
+  .extra-inner { padding: 12px 0 4px 38px; }
+
+  /* 上楼服务 */
+  .stairs-info {
+    background: #f0f7ff; border-radius: 8px;
+    padding: 10px 12px; margin-top: 10px;
+    font-size: 12px; color: #555; line-height: 1.8;
+  }
+  .stairs-info.warn { background: #fff2f0; color: #cf1322; }
+  .stairs-info .label { color: #999; }
+  .stairs-info .value { font-weight: 600; }
+
+  /* 利润率 */
+  .profit-row {
+    display: flex; align-items: center; justify-content: space-between; padding: 8px 0;
+  }
+  .profit-row label { font-size: 13px; color: #666; }
+  .profit-input { display: flex; align-items: center; gap: 6px; }
+  .profit-input input { width: 70px; height: 34px; text-align: center; font-size: 14px; }
+  .profit-input span { font-size: 13px; color: #999; }
+
+  /* 按钮组 */
+  .btn-group { display: flex; gap: 10px; margin: 8px 0 16px; }
+  .calc-btn {
+    flex: 1; height: 50px;
+    background: linear-gradient(135deg, #E1251B 0%, #FF4D4F 100%);
+    color: #fff; border: none; border-radius: 25px;
+    font-size: 17px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(225,37,27,0.3);
+    transition: transform 0.1s, box-shadow 0.2s;
+  }
+  .calc-btn:active { transform: scale(0.98); }
+  .refresh-btn {
+    width: 50px; height: 50px;
+    background: #fff; color: #666;
+    border: 1px solid #e0e0e0; border-radius: 25px;
+    font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .refresh-btn:active { background: #f5f5f5; }
+
+  /* 结果区域 */
+  .result-card {
+    background: #fff; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); display: none;
+  }
+  .result-card.show { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .result-header {
+    background: linear-gradient(135deg, #E1251B 0%, #FF4D4F 100%);
+    color: #fff; padding: 16px; text-align: center;
+  }
+  .result-header .label { font-size: 13px; opacity: 0.9; margin-bottom: 4px; }
+  .result-header .price { font-size: 36px; font-weight: 700; }
+  .result-header .price small { font-size: 16px; font-weight: 400; }
+  .result-body { padding: 12px 16px; }
+  .result-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; font-size: 14px; border-bottom: 1px dashed #f0f0f0;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-row .name { color: #666; }
+  .result-row .value { color: #333; font-weight: 500; }
+  .result-row.total .name { color: #333; font-weight: 600; font-size: 15px; }
+  .result-row.total .value { color: #E1251B; font-weight: 700; font-size: 16px; }
+  .result-row.profit-row-item .value { color: #52c41a; }
+  .result-row.weight-row .value { color: #1890ff; }
+  .detail-text {
+    font-size: 12px; color: #999; padding: 8px 0 4px; line-height: 1.7;
+  }
+  .detail-text strong { color: #666; }
+  .notice-box {
+    background: #fffbe6; border: 1px solid #ffe58f; border-radius: 8px;
+    padding: 10px 12px; margin-top: 10px; font-size: 12px;
+    color: #876800; line-height: 1.7;
+  }
+  .result-actions {
+    display: flex; gap: 10px; padding: 12px 16px 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+  .save-btn {
+    flex: 1; height: 40px;
+    background: #52c41a; color: #fff;
+    border: none; border-radius: 20px;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+  }
+  .save-btn:active { background: #49b017; }
+  .save-btn.saved { background: #aaa; }
+
+  /* 历史记录 */
+  .history-list { margin-top: 10px; }
+  .history-item {
+    background: #fafafa; border-radius: 8px;
+    padding: 12px; margin-bottom: 8px;
+    position: relative;
+  }
+  .history-item .route {
+    font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px;
+  }
+  .history-item .meta {
+    font-size: 11px; color: #999; margin-bottom: 6px;
+  }
+  .history-item .prices {
+    display: flex; gap: 12px; font-size: 12px;
+  }
+  .history-item .prices .p { color: #666; }
+  .history-item .prices .p span { color: #E1251B; font-weight: 600; }
+  .history-item .del-history {
+    position: absolute; top: 8px; right: 8px;
+    width: 24px; height: 24px; border: none;
+    background: transparent; color: #ccc; font-size: 16px;
+    cursor: pointer; border-radius: 50%;
+  }
+  .history-item .del-history:active { color: #E1251B; }
+  .history-empty {
+    text-align: center; padding: 30px 0; color: #ccc; font-size: 13px;
+  }
+  .clear-all-btn {
+    width: 100%; height: 36px;
+    background: #fff; color: #999;
+    border: 1px solid #e0e0e0; border-radius: 8px;
+    font-size: 13px; cursor: pointer; margin-top: 8px;
+  }
+  .clear-all-btn:active { background: #f5f5f5; color: #E1251B; border-color: #E1251B; }
+
+  .footer-tip {
+    text-align: center; font-size: 11px; color: #bbb;
+    padding: 16px; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>京东快运运费计算器</h1>
+  <p>重货标快 · 北京始发 · 1KG进位 · 阶梯计价</p>
+</div>
+
+<div class="container">
+
+  <!-- 线路信息 -->
+  <div class="card">
+    <div class="route-info">
+      <span class="city">北京</span>
+      <span class="arrow">→</span>
+      <span class="city" id="destDisplay">请选择目的地</span>
+      <span class="tag">重货标快</span>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label"><span class="required">*</span>目的省份/城市</label>
+      <select id="destination">
+        <option value="">请选择目的地</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label"><span class="required">*</span>实际重量</label>
+      <div class="input-with-unit">
+        <input type="number" id="weight" placeholder="请输入实际重量" min="0.1" step="0.1">
+        <span class="unit">KG</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">体积尺寸与件数<span class="optional">选填，用于计算体积重量</span></label>
+      <div class="volume-rows" id="volumeRows"></div>
+      <button class="add-row-btn" onclick="addVolumeRow()">+ 添加一行</button>
+      <div class="volume-summary">
+        <div class="item">
+          <div class="label">总体积</div>
+          <div class="value" id="totalVolume">0 m³</div>
+        </div>
+        <div class="item">
+          <div class="label">总件数</div>
+          <div class="value" id="totalCount">0 件</div>
+        </div>
+        <div class="item">
+          <div class="label">体积重量</div>
+          <div class="value" id="volumeWeight">0 KG</div>
+        </div>
+      </div>
+      <div class="weight-compare" id="weightCompare"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">最重单件重量<span class="optional">选填，用于上楼服务计费判断</span></label>
+      <div class="input-with-unit">
+        <input type="number" id="maxSingleWeight" placeholder="请输入最重单件重量" min="0" step="0.1">
+        <span class="unit">KG</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 附加服务 -->
+  <div class="card">
+    <div class="card-title"><span class="left">附加服务</span></div>
+
+    <!-- 保价 -->
+    <div class="switch-row">
+      <div class="switch-label">
+        <div class="icon icon-insure">🛡</div>
+        <div>
+          <div>保价服务</div>
+          <div class="desc">费率6‰，按重量设最低收费</div>
+        </div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="insureToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="extra-options" id="insureOptions">
+      <div class="extra-inner">
+        <div class="form-group">
+          <label class="form-label">保价金额</label>
+          <div class="input-with-unit">
+            <input type="number" id="insureAmount" placeholder="请输入保价金额" min="0" value="2000">
+            <span class="unit">元</span>
+          </div>
+        </div>
+        <div class="detail-text" id="insureTip"></div>
+      </div>
+    </div>
+
+    <!-- 上楼 -->
+    <div class="switch-row">
+      <div class="switch-label">
+        <div class="icon icon-stairs">🏢</div>
+        <div>
+          <div>上楼服务</div>
+          <div class="desc">按重量计费，超重超长不支持</div>
+        </div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="stairsToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="extra-options" id="stairsOptions">
+      <div class="extra-inner">
+        <div class="stairs-info" id="stairsInfo"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 利润率 -->
+  <div class="card">
+    <div class="profit-row">
+      <label>利润加成</label>
+      <div class="profit-input">
+        <input type="number" id="profitRate" value="15" min="0" max="100">
+        <span>%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 按钮组 -->
+  <div class="btn-group">
+    <button class="calc-btn" onclick="calculate()">立即计算</button>
+    <button class="refresh-btn" onclick="refreshAll()" title="刷新重置">↻</button>
+  </div>
+
+  <!-- 结果 -->
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <div class="label">最终报价（含默认加价与利润）</div>
+      <div class="price"><small>¥</small><span id="finalPrice">0.00</span></div>
+    </div>
+    <div class="result-body">
+      <div class="result-row weight-row">
+        <span class="name">计费重量</span>
+        <span class="value" id="billableWeight">0 KG</span>
+      </div>
+      <div class="result-row">
+        <span class="name">基础运费</span>
+        <span class="value" id="baseFee">0 元</span>
+      </div>
+      <div class="result-row" id="insureFeeRow" style="display:none">
+        <span class="name">保价费</span>
+        <span class="value" id="insureFee">0 元</span>
+      </div>
+      <div class="result-row" id="stairsFeeRow" style="display:none">
+        <span class="name">上楼费</span>
+        <span class="value" id="stairsFeeDisplay">0 元</span>
+      </div>
+      <div class="result-row total">
+        <span class="name">成本合计</span>
+        <span class="value" id="totalCost">0 元</span>
+      </div>
+      <div class="result-row profit-row-item">
+        <span class="name">默认加价（<span id="markupRateDisplay">5</span>%）</span>
+        <span class="value" id="markupAmount">+0 元</span>
+      </div>
+      <div class="result-row profit-row-item">
+        <span class="name">利润（<span id="profitRateDisplay">15</span>%）</span>
+        <span class="value" id="profitAmount">0 元</span>
+      </div>
+      <div class="detail-text" id="calcDetail"></div>
+      <div class="notice-box" id="noticeBox" style="display:none"></div>
+    </div>
+    <div class="result-actions">
+      <button class="save-btn" id="saveBtn" onclick="saveRecord()">保存记录</button>
+    </div>
+  </div>
+
+  <!-- 历史记录 -->
+  <div class="card" id="historyCard">
+    <div class="card-title">
+      <span class="left">历史记录</span>
+      <span class="count" id="historyCount">0条</span>
+    </div>
+    <div class="history-list" id="historyList"></div>
+    <button class="clear-all-btn" id="clearAllBtn" onclick="clearAllHistory()" style="display:none">清除全部记录</button>
+  </div>
+
+  <div class="footer-tip">
+    价格基于京东快运重货标快折扣价计算<br>
+    运费不含超长超重附加费、偏远地区附加费等<br>
+    实际费用以京东物流官方报价为准
+  </div>
+
+</div>
+
+<script>
+// 价格数据：北京-重货标快（首15KG，折扣率0.43）
+const priceData = [
+  {name:"同城", first:10.75, extra1:0.86, extra2:0.559},
+  {name:"河北", first:10.965, extra1:0.817, extra2:0.602},
+  {name:"天津", first:13.545, extra1:0.817, extra2:0.559},
+  {name:"江苏（苏州）", first:24.51, extra1:1.548, extra2:1.118},
+  {name:"浙江（杭州、湖州、台州）", first:24.295, extra1:1.591, extra2:1.075},
+  {name:"吉林", first:27.52, extra1:1.376, extra2:1.161},
+  {name:"黑龙江（大庆、大兴安岭地区、哈尔滨、绥化）", first:27.305, extra1:1.419, extra2:1.075},
+  {name:"湖南", first:27.09, extra1:1.462, extra2:1.247},
+  {name:"上海", first:26.875, extra1:1.505, extra2:0.946},
+  {name:"江西", first:26.66, extra1:1.548, extra2:1.161},
+  {name:"湖北", first:26.66, extra1:1.548, extra2:1.247},
+  {name:"陕西", first:26.66, extra1:1.548, extra2:1.29},
+  {name:"黑龙江（牡丹江、伊春）", first:27.52, extra1:1.462, extra2:1.118},
+  {name:"黑龙江（齐齐哈尔）", first:27.52, extra1:1.505, extra2:1.075},
+  {name:"黑龙江（鹤岗、黑河、鸡西、佳木斯、七台河、双鸭山）", first:27.305, extra1:1.505, extra2:1.118},
+  {name:"江苏（连云港、徐州）", first:27.09, extra1:1.548, extra2:1.075},
+  {name:"浙江（嘉兴、金华、丽水、宁波、衢州、绍兴、温州、舟山）", first:26.875, extra1:1.591, extra2:1.032},
+  {name:"江苏（常州、淮安、南京、南通、宿迁、泰州、无锡、盐城、扬州、镇江）", first:26.875, extra1:1.591, extra2:1.075},
+  {name:"四川（阿坝州、巴中、成都、达州、德阳、甘孜州、广安、广元、乐山、凉山州、泸州、眉山、绵阳、南充、内江、遂宁、雅安、宜宾、资阳、自贡）", first:26.875, extra1:1.677, extra2:1.376},
+  {name:"福建", first:27.735, extra1:1.591, extra2:1.419},
+  {name:"安徽", first:28.38, extra1:1.548, extra2:1.161},
+  {name:"甘肃", first:28.38, extra1:1.548, extra2:1.419},
+  {name:"重庆", first:28.81, extra1:1.634, extra2:1.419},
+  {name:"宁夏", first:29.24, extra1:1.634, extra2:1.333},
+  {name:"四川（攀枝花）", first:29.885, extra1:1.849, extra2:1.376},
+  {name:"内蒙古（呼和浩特）", first:33.325, extra1:1.333, extra2:0.774},
+  {name:"山西", first:34.185, extra1:1.247, extra2:0.903},
+  {name:"辽宁", first:33.755, extra1:1.333, extra2:0.946},
+  {name:"山东", first:34.185, extra1:1.333, extra2:0.817},
+  {name:"河南", first:33.11, extra1:1.548, extra2:1.032},
+  {name:"广东", first:32.465, extra1:1.677, extra2:1.204},
+  {name:"贵州", first:33.11, extra1:1.892, extra2:1.376},
+  {name:"内蒙古（阿拉善盟、巴彦淖尔、包头、赤峰、鄂尔多斯、呼伦贝尔、通辽、乌海、乌兰察布、锡林郭勒盟、兴安盟）", first:35.905, extra1:1.505, extra2:0.946},
+  {name:"青海", first:34.185, extra1:1.849, extra2:1.29},
+  {name:"云南（昆明）", first:37.41, extra1:1.806, extra2:1.247},
+  {name:"广西", first:36.98, extra1:1.892, extra2:1.29},
+  {name:"云南（楚雄州、大理州、红河州、文山州）", first:39.56, extra1:1.892, extra2:1.247},
+  {name:"云南（德宏州、迪庆州、临沧、怒江州、普洱、西双版纳州）", first:39.56, extra1:1.892, extra2:1.29},
+  {name:"云南（曲靖、昭通）", first:39.56, extra1:1.935, extra2:1.204},
+  {name:"云南（玉溪）", first:39.56, extra1:1.935, extra2:1.247},
+  {name:"云南（保山）", first:39.56, extra1:1.935, extra2:1.29},
+  {name:"海南（白沙县、保亭县、昌江县、澄迈县、儋州、定安县、东方、海口、乐东县、陵水县、琼海、琼中县、三沙、三亚、屯昌县、万宁、文昌、五指山）", first:39.56, extra1:2.365, extra2:1.548},
+  {name:"云南（丽江）", first:43.215, extra1:2.193, extra2:1.376},
+  {name:"海南（临高县）", first:41.71, extra1:2.494, extra2:1.548},
+  {name:"西藏（拉萨）", first:109.5, extra1:6.5, extra2:6.4},
+  {name:"新疆（乌鲁木齐）", first:139.5, extra1:5.7, extra2:4.1},
+  {name:"新疆（其他地区）", first:140, extra1:5.8, extra2:4.2},
+  {name:"西藏（阿里地区、昌都地区、林芝、那曲地区、日喀则地区、山南地区）", first:131, extra1:7.6, extra2:6.7}
+];
+
+const FIRST_WEIGHT = 15;
+const TIER1_END = 60;
+// 抛比系数：内部实际按4000（价格本官方规则为÷6000）
+const VOLUME_DIVISOR = 4000;
+// 默认加价%：在利润率之外，先固定加在成本上（成本×1.05 后再乘利润率）
+const DEFAULT_MARKUP = 5;
+const STORAGE_KEY = 'jd_express_history';
+
+// 初始化目的地下拉框
+const destSelect = document.getElementById('destination');
+priceData.forEach((item, idx) => {
+  const opt = document.createElement('option');
+  opt.value = idx;
+  opt.textContent = item.name;
+  destSelect.appendChild(opt);
+});
+
+// 目的地变化
+destSelect.addEventListener('change', function() {
+  const idx = this.value;
+  document.getElementById('destDisplay').textContent = idx !== '' ? priceData[idx].name : '请选择目的地';
+});
+
+// ========== 体积件数多行输入 ==========
+let volumeRowCount = 0;
+
+function addVolumeRow() {
+  volumeRowCount++;
+  const rowId = 'vrow_' + volumeRowCount;
+  const html = `
+    <div class="volume-row" id="${rowId}">
+      <div class="field"><label>长 cm</label><input type="number" class="v-length" min="0" step="1" oninput="updateVolumeSummary()"></div>
+      <div class="field"><label>宽 cm</label><input type="number" class="v-width" min="0" step="1" oninput="updateVolumeSummary()"></div>
+      <div class="field"><label>高 cm</label><input type="number" class="v-height" min="0" step="1" oninput="updateVolumeSummary()"></div>
+      <div class="field"><label>件数</label><input type="number" class="v-count" min="1" step="1" value="1" oninput="updateVolumeSummary()"></div>
+      <button class="del-btn" onclick="removeVolumeRow('${rowId}')">×</button>
+    </div>`;
+  document.getElementById('volumeRows').insertAdjacentHTML('beforeend', html);
+  updateVolumeSummary();
+}
+
+function removeVolumeRow(rowId) {
+  const row = document.getElementById(rowId);
+  if (row) {
+    row.remove();
+    updateVolumeSummary();
+  }
+}
+
+function getVolumeData() {
+  const rows = document.querySelectorAll('.volume-row');
+  let totalVolumeCm3 = 0;
+  let totalCount = 0;
+  rows.forEach(row => {
+    const l = parseFloat(row.querySelector('.v-length').value) || 0;
+    const w = parseFloat(row.querySelector('.v-width').value) || 0;
+    const h = parseFloat(row.querySelector('.v-height').value) || 0;
+    const c = parseFloat(row.querySelector('.v-count').value) || 0;
+    if (l > 0 && w > 0 && h > 0 && c > 0) {
+      totalVolumeCm3 += l * w * h * c;
+      totalCount += c;
+    }
+  });
+  return {
+    volumeM3: totalVolumeCm3 / 1000000, // 转换为立方米
+    volumeWeight: totalVolumeCm3 / VOLUME_DIVISOR, // 体积重量KG
+    totalCount: totalCount
+  };
+}
+
+function updateVolumeSummary() {
+  const data = getVolumeData();
+  document.getElementById('totalVolume').textContent = data.volumeM3.toFixed(4) + ' m³';
+  document.getElementById('totalCount').textContent = data.totalCount + ' 件';
+  document.getElementById('volumeWeight').textContent = data.volumeWeight.toFixed(2) + ' KG';
+  updateWeightCompare();
+  updateInsureTip();
+  updateStairsInfo();
+}
+
+function getVolumeWeight() {
+  return getVolumeData().volumeWeight;
+}
+
+// 从多行体积输入中获取最大尺寸（用于上楼限制判断）
+function getMaxDimensions() {
+  const rows = document.querySelectorAll('.volume-row');
+  let maxSide = 0;
+  let maxSumSides = 0;
+  let hasData = false;
+  rows.forEach(row => {
+    const l = parseFloat(row.querySelector('.v-length').value) || 0;
+    const w = parseFloat(row.querySelector('.v-width').value) || 0;
+    const h = parseFloat(row.querySelector('.v-height').value) || 0;
+    if (l > 0 && w > 0 && h > 0) {
+      hasData = true;
+      const side = Math.max(l, w, h);
+      const sum = l + w + h;
+      if (side > maxSide) maxSide = side;
+      if (sum > maxSumSides) maxSumSides = sum;
+    }
+  });
+  return { maxSide: maxSide, maxSumSides: maxSumSides, hasData: hasData };
+}
+
+// 重量对比显示
+function updateWeightCompare() {
+  const actualWeight = parseFloat(document.getElementById('weight').value) || 0;
+  const volumeWeight = getVolumeWeight();
+  const box = document.getElementById('weightCompare');
+
+  if (actualWeight > 0 && volumeWeight > 0) {
+    const maxWeight = Math.max(actualWeight, volumeWeight);
+    const billable = Math.ceil(maxWeight);
+    const useVolume = volumeWeight > actualWeight;
+    box.innerHTML = `实际重量：<span class="${useVolume ? '' : 'highlight'}">${actualWeight} KG</span>　` +
+      `体积重量：<span class="${useVolume ? 'highlight' : ''}">${volumeWeight.toFixed(2)} KG</span><br>` +
+      `取较大值：<span class="highlight">${maxWeight.toFixed(2)} KG</span>，1KG向上取整后计费重量：<span class="highlight">${billable} KG</span>`;
+    box.classList.add('show');
+  } else {
+    box.classList.remove('show');
+  }
+}
+
+// 保价开关
+document.getElementById('insureToggle').addEventListener('change', function() {
+  document.getElementById('insureOptions').classList.toggle('open', this.checked);
+  updateInsureTip();
+});
+
+// 上楼开关
+document.getElementById('stairsToggle').addEventListener('change', function() {
+  document.getElementById('stairsOptions').classList.toggle('open', this.checked);
+  updateStairsInfo();
+});
+
+// 保价金额变化
+document.getElementById('insureAmount').addEventListener('input', updateInsureTip);
+
+// 重量变化
+document.getElementById('weight').addEventListener('input', function() {
+  updateWeightCompare();
+  updateInsureTip();
+  updateStairsInfo();
+});
+
+// 最重单件变化
+document.getElementById('maxSingleWeight').addEventListener('input', updateStairsInfo);
+
+function updateInsureTip() {
+  const amount = parseFloat(document.getElementById('insureAmount').value) || 0;
+  const weight = parseFloat(document.getElementById('weight').value) || 0;
+  const tip = document.getElementById('insureTip');
+  if (amount > 0 && weight > 0) {
+    const billable = Math.ceil(Math.max(weight, getVolumeWeight()));
+    const minFee = billable < 40 ? 2 : (billable <= 100 ? 4 : 12);
+    const fee = Math.max(amount * 0.006, minFee);
+    tip.textContent = `保价费 = ${amount} × 6‰ = ${(amount * 0.006).toFixed(2)}元，不低于最低收费${minFee}元，实收 ${fee.toFixed(2)} 元`;
+  } else {
+    tip.textContent = '';
+  }
+}
+
+function updateStairsInfo() {
+  const info = document.getElementById('stairsInfo');
+  const maxSingle = parseFloat(document.getElementById('maxSingleWeight').value) || 0;
+  const dims = getMaxDimensions();
+  const actualWeight = parseFloat(document.getElementById('weight').value) || 0;
+
+  if (maxSingle <= 0) {
+    info.innerHTML = '<span class="label">请输入最重单件重量，系统将自动判断上楼计费标准</span>';
+    info.className = 'stairs-info';
+    return;
+  }
+
+  const maxSide = dims.maxSide;
+  const sumSides = dims.maxSumSides;
+  const billable = Math.ceil(Math.max(actualWeight, getVolumeWeight()));
+
+  const reasons = [];
+  if (maxSingle > 135) reasons.push(`最重单件${maxSingle}KG > 135KG`);
+  if (dims.hasData && maxSide > 250) reasons.push(`最长边${maxSide}cm > 250cm（2.5米）`);
+  if (dims.hasData && sumSides > 500) reasons.push(`三边之和${sumSides}cm > 500cm（5米）`);
+
+  if (reasons.length > 0) {
+    info.className = 'stairs-info warn';
+    info.innerHTML = `<strong>⚠ 不支持上楼服务</strong><br>原因：${reasons.join('；')}`;
+    return;
+  }
+
+  info.className = 'stairs-info';
+  let rate = 0;
+  let condition = '';
+  // a条件：任意件≥60KG → 0.9元/KG
+  if (maxSingle >= 60) {
+    rate = 0.9;
+    condition = `最重单件${maxSingle}KG ≥ 60KG，按0.9元/KG`;
+  }
+  // b条件：所有件<60KG且整票≥100KG → 0.3元/KG
+  else if (billable >= 100) {
+    rate = 0.3;
+    condition = `所有件<60KG且整票${billable}KG ≥ 100KG，按0.3元/KG`;
+  } else {
+    condition = `所有件<60KG且整票${billable}KG < 100KG，不满足计费条件`;
+  }
+
+  const fee = rate > 0 ? Math.round(billable * rate) : 0;
+  info.innerHTML = `<span class="label">计费标准：</span><span class="value">${condition}</span><br>` +
+    `<span class="label">上楼费：</span><span class="value">${billable}KG × ${rate}元/KG = ${fee}元</span>` +
+    (rate === 0 ? '（免收上楼费）' : '');
+}
+
+// ========== 主计算函数 ==========
+function calculate() {
+  const destIdx = destSelect.value;
+  const actualWeight = parseFloat(document.getElementById('weight').value);
+
+  if (destIdx === '') { alert('请选择目的地'); return; }
+  if (!actualWeight || actualWeight <= 0) { alert('请输入有效的货物重量'); return; }
+
+  const data = priceData[destIdx];
+  const volumeWeight = getVolumeWeight();
+  const volumeData = getVolumeData();
+
+  // 计费重量 = max(实际重量, 体积重量)，1KG向上取整
+  const maxWeight = Math.max(actualWeight, volumeWeight);
+  const billableWeight = Math.ceil(maxWeight);
+
+  // 基础运费
+  let baseFee = 0;
+  let detail = '';
+  if (billableWeight <= FIRST_WEIGHT) {
+    baseFee = data.first;
+    detail = `计费重量${billableWeight}KG ≤ 首重15KG，按首重价 ${data.first.toFixed(3)} 元计算`;
+  } else if (billableWeight <= TIER1_END) {
+    const extraW = billableWeight - FIRST_WEIGHT;
+    baseFee = data.first + extraW * data.extra1;
+    detail = `首重15KG：${data.first.toFixed(3)}元 + 续重${extraW}KG × ${data.extra1}元/KG = ${(extraW * data.extra1).toFixed(3)}元，合计 ${baseFee.toFixed(3)} 元`;
+  } else {
+    const extra1W = TIER1_END - FIRST_WEIGHT;
+    const extra2W = billableWeight - TIER1_END;
+    baseFee = data.first + extra1W * data.extra1 + extra2W * data.extra2;
+    detail = `首重15KG：${data.first.toFixed(3)}元 + 续重①${extra1W}KG × ${data.extra1}元/KG + 续重②${extra2W}KG × ${data.extra2}元/KG，合计 ${baseFee.toFixed(3)} 元`;
+  }
+  baseFee = Math.round(baseFee);
+
+  // 保价费
+  let insureFee = 0;
+  const insureChecked = document.getElementById('insureToggle').checked;
+  if (insureChecked) {
+    const insureAmount = parseFloat(document.getElementById('insureAmount').value) || 0;
+    const minFee = billableWeight < 40 ? 2 : (billableWeight <= 100 ? 4 : 12);
+    insureFee = Math.round(Math.max(insureAmount * 0.006, minFee));
+  }
+
+  // 上楼费
+  let stairsFee = 0;
+  let stairsSupported = true;
+  let stairsNotice = '';
+  const stairsChecked = document.getElementById('stairsToggle').checked;
+  if (stairsChecked) {
+    const maxSingle = parseFloat(document.getElementById('maxSingleWeight').value) || 0;
+    const dims = getMaxDimensions();
+    const maxSide = dims.maxSide;
+    const sumSides = dims.maxSumSides;
+
+    const reasons = [];
+    if (maxSingle > 135) reasons.push(`最重单件${maxSingle}KG > 135KG`);
+    if (dims.hasData && maxSide > 250) reasons.push(`最长边${maxSide}cm > 250cm（2.5米）`);
+    if (dims.hasData && sumSides > 500) reasons.push(`三边之和${sumSides}cm > 500cm（5米）`);
+
+    if (reasons.length > 0) {
+      stairsSupported = false;
+      stairsNotice = `不支持上楼服务：${reasons.join('；')}。已自动不计入上楼费。`;
+    } else if (maxSingle <= 0) {
+      stairsNotice = '未输入最重单件重量，上楼费暂按0元计算。请输入最重单件重量以获取准确上楼费。';
+    } else {
+      let rate = 0;
+      if (maxSingle >= 60) { rate = 0.9; }
+      else if (billableWeight >= 100) { rate = 0.3; }
+      stairsFee = Math.round(billableWeight * rate);
+    }
+  }
+
+  // 总成本 → 默认加价5% → 使用人填写的利润率
+  const totalCost = baseFee + insureFee + stairsFee;
+  const markupAmount = totalCost * DEFAULT_MARKUP / 100;
+  const withMarkup = totalCost + markupAmount;
+  const profitRate = parseFloat(document.getElementById('profitRate').value) || 0;
+  const profitAmount = withMarkup * profitRate / 100;
+  const finalPrice = withMarkup + profitAmount;
+
+  // 更新显示
+  document.getElementById('billableWeight').textContent = billableWeight + ' KG';
+  document.getElementById('baseFee').textContent = baseFee + ' 元';
+  document.getElementById('finalPrice').textContent = finalPrice.toFixed(2);
+  document.getElementById('totalCost').textContent = totalCost + ' 元';
+  document.getElementById('markupAmount').textContent = '+' + markupAmount.toFixed(2) + ' 元';
+  document.getElementById('markupRateDisplay').textContent = DEFAULT_MARKUP;
+  document.getElementById('profitAmount').textContent = '+' + profitAmount.toFixed(2) + ' 元';
+  document.getElementById('profitRateDisplay').textContent = profitRate;
+
+  const insureRow = document.getElementById('insureFeeRow');
+  if (insureChecked) {
+    insureRow.style.display = 'flex';
+    document.getElementById('insureFee').textContent = insureFee + ' 元';
+  } else { insureRow.style.display = 'none'; }
+
+  const stairsRow = document.getElementById('stairsFeeRow');
+  if (stairsChecked && stairsSupported) {
+    stairsRow.style.display = 'flex';
+    document.getElementById('stairsFeeDisplay').textContent = stairsFee + ' 元';
+  } else { stairsRow.style.display = 'none'; }
+
+  // 计算明细
+  let detailHtml = '<strong>计费说明：</strong><br>';
+  detailHtml += `• 实际重量 ${actualWeight}KG`;
+  if (volumeWeight > 0) {
+    detailHtml += `，体积重量 ${volumeWeight.toFixed(2)}KG（总体积${volumeData.volumeM3.toFixed(4)}m³÷${VOLUME_DIVISOR}，共${volumeData.totalCount}件），取较大值 ${maxWeight.toFixed(2)}KG`;
+  }
+  detailHtml += `，1KG向上取整后计费重量 <strong>${billableWeight}KG</strong><br>`;
+  detailHtml += `• ${detail}<br>`;
+  detailHtml += `• 基础运费四舍五入取整：<strong>${baseFee}元</strong><br>`;
+  if (insureChecked) { detailHtml += `• 保价费：${insureFee}元（费率6‰，含最低收费）<br>`; }
+  else { detailHtml += `• 未选保价，含基础保价服务（不额外收费）<br>`; }
+  if (stairsChecked) {
+    if (stairsSupported) { detailHtml += `• 上楼费：${stairsFee}元<br>`; }
+  }
+  detailHtml += `• 成本合计 ${totalCost}元，先默认加价${DEFAULT_MARKUP}%（+${markupAmount.toFixed(2)}元）= ${withMarkup.toFixed(2)}元，再加利润${profitRate}%（${profitAmount.toFixed(2)}元）= 报价 <strong>${finalPrice.toFixed(2)}元</strong>`;
+  document.getElementById('calcDetail').innerHTML = detailHtml;
+
+  // 提示框
+  const noticeBox = document.getElementById('noticeBox');
+  if (stairsNotice) {
+    noticeBox.style.display = 'block';
+    noticeBox.innerHTML = '⚠ ' + stairsNotice;
+  } else { noticeBox.style.display = 'none'; }
+
+  // 保存按钮重置
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.textContent = '保存记录';
+  saveBtn.classList.remove('saved');
+  saveBtn.dataset.saved = 'false';
+
+  // 显示结果
+  document.getElementById('resultCard').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// ========== 刷新功能 ==========
+function refreshAll() {
+  if (!confirm('确定要刷新重置吗？所有输入和计算结果将被清空。')) return;
+
+  // 清空输入
+  destSelect.value = '';
+  document.getElementById('destDisplay').textContent = '请选择目的地';
+  document.getElementById('weight').value = '';
+  document.getElementById('maxSingleWeight').value = '';
+  document.getElementById('insureAmount').value = '2000';
+  document.getElementById('profitRate').value = '15';
+
+  // 清空体积行，重新添加一行
+  document.getElementById('volumeRows').innerHTML = '';
+  volumeRowCount = 0;
+  addVolumeRow();
+
+  // 关闭开关
+  document.getElementById('insureToggle').checked = false;
+  document.getElementById('stairsToggle').checked = false;
+  document.getElementById('insureOptions').classList.remove('open');
+  document.getElementById('stairsOptions').classList.remove('open');
+
+  // 清空提示
+  document.getElementById('insureTip').textContent = '';
+  document.getElementById('stairsInfo').innerHTML = '';
+  document.getElementById('weightCompare').classList.remove('show');
+  updateVolumeSummary();
+
+  // 隐藏结果
+  document.getElementById('resultCard').classList.remove('show');
+
+  // 滚动到顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ========== 保存记录功能 ==========
+function saveRecord() {
+  const saveBtn = document.getElementById('saveBtn');
+  if (saveBtn.dataset.saved === 'true') return;
+
+  const destIdx = destSelect.value;
+  const destName = destIdx !== '' ? priceData[destIdx].name : '';
+  const actualWeight = parseFloat(document.getElementById('weight').value) || 0;
+  const volumeData = getVolumeData();
+  const billableWeight = document.getElementById('billableWeight').textContent;
+  const baseFee = parseInt(document.getElementById('baseFee').textContent) || 0;
+  const totalCost = parseInt(document.getElementById('totalCost').textContent) || 0;
+  const finalPrice = parseFloat(document.getElementById('finalPrice').textContent) || 0;
+  const profitRate = document.getElementById('profitRateDisplay').textContent;
+
+  const record = {
+    id: Date.now(),
+    time: new Date().toLocaleString('zh-CN'),
+    destination: destName,
+    actualWeight: actualWeight,
+    totalCount: volumeData.totalCount,
+    totalVolume: volumeData.volumeM3.toFixed(4),
+    billableWeight: billableWeight,
+    baseFee: baseFee,
+    insureFee: document.getElementById('insureFeeRow').style.display !== 'none' ? parseInt(document.getElementById('insureFee').textContent) : 0,
+    stairsFee: document.getElementById('stairsFeeRow').style.display !== 'none' ? parseInt(document.getElementById('stairsFeeDisplay').textContent) : 0,
+    totalCost: totalCost,
+    markupRate: DEFAULT_MARKUP,
+    markupAmount: totalCost * DEFAULT_MARKUP / 100,
+    profitRate: profitRate,
+    finalPrice: finalPrice
+  };
+
+  let history = [];
+  try {
+    history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch(e) { history = []; }
+
+  history.unshift(record);
+  if (history.length > 50) history = history.slice(0, 50);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+
+  saveBtn.textContent = '✓ 已保存';
+  saveBtn.classList.add('saved');
+  saveBtn.dataset.saved = 'true';
+
+  renderHistory();
+}
+
+function renderHistory() {
+  let history = [];
+  try {
+    history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch(e) { history = []; }
+
+  const list = document.getElementById('historyList');
+  const countEl = document.getElementById('historyCount');
+  const clearBtn = document.getElementById('clearAllBtn');
+
+  countEl.textContent = history.length + '条';
+
+  if (history.length === 0) {
+    list.innerHTML = '<div class="history-empty">暂无保存记录</div>';
+    clearBtn.style.display = 'none';
+    return;
+  }
+
+  clearBtn.style.display = 'block';
+  list.innerHTML = history.map(item => `
+    <div class="history-item">
+      <button class="del-history" onclick="deleteHistory(${item.id})">×</button>
+      <div class="route">北京 → ${item.destination}</div>
+      <div class="meta">${item.time} · 实际${item.actualWeight}KG · ${item.totalCount}件 · 计费${item.billableWeight}</div>
+      <div class="prices">
+        <div class="p">成本 <span>${item.totalCost}元</span></div>
+        <div class="p">${item.markupRate ? `加价${item.markupRate}%+利润${item.profitRate}%` : `利润${item.profitRate}%`} <span>+${(item.finalPrice - item.totalCost).toFixed(2)}元</span></div>
+        <div class="p">报价 <span>${item.finalPrice.toFixed(2)}元</span></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function deleteHistory(id) {
+  if (!confirm('确定要删除这条记录吗？')) return;
+  let history = [];
+  try {
+    history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch(e) { history = []; }
+  history = history.filter(item => item.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+  renderHistory();
+}
+
+function clearAllHistory() {
+  if (!confirm('确定要清除全部历史记录吗？此操作不可恢复。')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderHistory();
+}
+
+// ========== 初始化 ==========
+addVolumeRow();
+renderHistory();
+</script>
+
+</body>
+</html>
