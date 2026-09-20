@@ -495,7 +495,7 @@
   <!-- 结果 -->
   <div class="result-card" id="resultCard">
     <div class="result-header">
-      <div class="label">最终报价（含默认加价与利润）</div>
+      <div class="label">最终报价（含利润）</div>
       <div class="price"><small>¥</small><span id="finalPrice">0.00</span></div>
     </div>
     <div class="result-body">
@@ -518,10 +518,6 @@
       <div class="result-row total">
         <span class="name">成本合计</span>
         <span class="value" id="totalCost">0 元</span>
-      </div>
-      <div class="result-row profit-row-item">
-        <span class="name">默认加价（<span id="markupRateDisplay">5</span>%）</span>
-        <span class="value" id="markupAmount">+0 元</span>
       </div>
       <div class="result-row profit-row-item">
         <span class="name">利润（<span id="profitRateDisplay">15</span>%）</span>
@@ -903,8 +899,6 @@ function calculate() {
   document.getElementById('baseFee').textContent = baseFee + ' 元';
   document.getElementById('finalPrice').textContent = finalPrice.toFixed(2);
   document.getElementById('totalCost').textContent = totalCost + ' 元';
-  document.getElementById('markupAmount').textContent = '+' + markupAmount.toFixed(2) + ' 元';
-  document.getElementById('markupRateDisplay').textContent = DEFAULT_MARKUP;
   document.getElementById('profitAmount').textContent = '+' + profitAmount.toFixed(2) + ' 元';
   document.getElementById('profitRateDisplay').textContent = profitRate;
 
@@ -934,7 +928,7 @@ function calculate() {
   if (stairsChecked) {
     if (stairsSupported) { detailHtml += `• 上楼费：${stairsFee}元<br>`; }
   }
-  detailHtml += `• 成本合计 ${totalCost}元，先默认加价${DEFAULT_MARKUP}%（+${markupAmount.toFixed(2)}元）= ${withMarkup.toFixed(2)}元，再加利润${profitRate}%（${profitAmount.toFixed(2)}元）= 报价 <strong>${finalPrice.toFixed(2)}元</strong>`;
+  detailHtml += `• 成本合计 ${totalCost}元 + 利润${profitRate}%（${profitAmount.toFixed(2)}元）= 报价 <strong>${finalPrice.toFixed(2)}元</strong>`;
   document.getElementById('calcDetail').innerHTML = detailHtml;
 
   // 提示框
@@ -1068,7 +1062,7 @@ function renderHistory() {
       <div class="meta">${item.time} · 实际${item.actualWeight}KG · ${item.totalCount}件 · 计费${item.billableWeight}</div>
       <div class="prices">
         <div class="p">成本 <span>${item.totalCost}元</span></div>
-        <div class="p">${item.markupRate ? `加价${item.markupRate}%+利润${item.profitRate}%` : `利润${item.profitRate}%`} <span>+${(item.finalPrice - item.totalCost).toFixed(2)}元</span></div>
+        <div class="p">利润${item.profitRate}% <span>+${(item.finalPrice - item.totalCost).toFixed(2)}元</span></div>
         <div class="p">报价 <span>${item.finalPrice.toFixed(2)}元</span></div>
       </div>
     </div>
