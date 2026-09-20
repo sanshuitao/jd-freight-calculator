@@ -886,13 +886,13 @@ function calculate() {
     }
   }
 
-  // 总成本 → 默认加价5% → 使用人填写的利润率
+  // 默认加价5%与利润率均只作用于报价表运费；保价费、上楼费为代收费用，原样计入报价
   const totalCost = baseFee + insureFee + stairsFee;
-  const markupAmount = totalCost * DEFAULT_MARKUP / 100;
-  const withMarkup = totalCost + markupAmount;
+  const markupAmount = baseFee * DEFAULT_MARKUP / 100;
+  const freightWithMarkup = baseFee + markupAmount;
   const profitRate = parseFloat(document.getElementById('profitRate').value) || 0;
-  const profitAmount = withMarkup * profitRate / 100;
-  const finalPrice = withMarkup + profitAmount;
+  const profitAmount = freightWithMarkup * profitRate / 100;
+  const finalPrice = freightWithMarkup + profitAmount + insureFee + stairsFee;
 
   // 更新显示
   document.getElementById('billableWeight').textContent = billableWeight + ' KG';
@@ -1015,7 +1015,7 @@ function saveRecord() {
     stairsFee: document.getElementById('stairsFeeRow').style.display !== 'none' ? parseInt(document.getElementById('stairsFeeDisplay').textContent) : 0,
     totalCost: totalCost,
     markupRate: DEFAULT_MARKUP,
-    markupAmount: totalCost * DEFAULT_MARKUP / 100,
+    markupAmount: baseFee * DEFAULT_MARKUP / 100,
     profitRate: profitRate,
     finalPrice: finalPrice
   };
