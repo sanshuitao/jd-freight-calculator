@@ -606,7 +606,7 @@ const FIRST_WEIGHT = 15;
 const TIER1_END = 60;
 // 抛比系数：内部实际按4000（价格本官方规则为÷6000）
 const VOLUME_DIVISOR = 4000;
-// 默认加价%：在利润率之外，先固定加在成本上（成本×1.05 后再乘利润率）
+// 默认加价%：价格表成本价先向上取整到角，再乘 (1+5%)，再向上取整到分作为报价单价（仅在后台计算，页面不展示）
 const DEFAULT_MARKUP = 5;
 const STORAGE_KEY = 'jd_express_history';
 
@@ -830,23 +830,31 @@ function calculate() {
   const maxWeight = Math.max(actualWeight, volumeWeight);
   const billableWeight = Math.ceil(maxWeight);
 
-  // 基础运费
-  let baseFee = 0;
+  // 报价单价 = 价格表成本价 → 向上取整到角 → 加默认加价5% → 向上取整到分（5%仅在后台计算，不展示）
+  const toJiao = v => Math.ceil(v * 10 - 1e-6) / 10;
+  const toFen = v => Math.ceil(v * 100 - 1e-6) / 100;
+  const markup = 1 + DEFAULT_MARKUP / 100;
+  const unitFirst = toFen(toJiao(data.first) * markup);
+  const unitExtra1 = toFen(toJiao(data.extra1) * markup);
+  const unitExtra2 = toFen(toJiao(data.extra2) * markup);
+
+  // 基础运费（分段计价：续重①段 = 15~60KG 区间，续重②段 = 60KG 以上）
+  let freight = 0;
   let detail = '';
   if (billableWeight <= FIRST_WEIGHT) {
-    baseFee = data.first;
-    detail = `计费重量${billableWeight}KG ≤ 首重15KG，按首重价 ${data.first.toFixed(3)} 元计算`;
+    freight = unitFirst;
+    detail = `计费重量${billableWeight}KG ≤ 首重15KG，按首重价 ${unitFirst.toFixed(2)} 元计算`;
   } else if (billableWeight <= TIER1_END) {
     const extraW = billableWeight - FIRST_WEIGHT;
-    baseFee = data.first + extraW * data.extra1;
-    detail = `首重15KG：${data.first.toFixed(3)}元 + 续重${extraW}KG × ${data.extra1}元/KG = ${(extraW * data.extra1).toFixed(3)}元，合计 ${baseFee.toFixed(3)} 元`;
+    freight = unitFirst + extraW * unitExtra1;
+    detail = `首重15KG：${unitFirst.toFixed(2)}元 + 续重${extraW}KG × ${unitExtra1.toFixed(2)}元/KG = ${(extraW * unitExtra1).toFixed(2)}元，合计 ${freight.toFixed(2)} 元`;
   } else {
     const extra1W = TIER1_END - FIRST_WEIGHT;
     const extra2W = billableWeight - TIER1_END;
-    baseFee = data.first + extra1W * data.extra1 + extra2W * data.extra2;
-    detail = `首重15KG：${data.first.toFixed(3)}元 + 续重①${extra1W}KG × ${data.extra1}元/KG + 续重②${extra2W}KG × ${data.extra2}元/KG，合计 ${baseFee.toFixed(3)} 元`;
+    freight = unitFirst + extra1W * unitExtra1 + extra2W * unitExtra2;
+    detail = `首重15KG：${unitFirst.toFixed(2)}元 + 续重①${extra1W}KG × ${unitExtra1.toFixed(2)}元/KG + 续重②${extra2W}KG × ${unitExtra2.toFixed(2)}元/KG，合计 ${freight.toFixed(2)} 元`;
   }
-  baseFee = Math.round(baseFee);
+  baseFee = Math.ceil(freight - 1e-6);
 
   // 保价费
   let insureFee = 0;
@@ -886,13 +894,11 @@ function calculate() {
     }
   }
 
-  // 默认加价5%与利润率均只作用于报价表运费；保价费、上楼费为代收费用，原样计入报价
+  // 利润率仅按运费计算（默认加价5%已并入运费单价）；保价费、上楼费为代收费用，原样计入报价
   const totalCost = baseFee + insureFee + stairsFee;
-  const markupAmount = baseFee * DEFAULT_MARKUP / 100;
-  const freightWithMarkup = baseFee + markupAmount;
   const profitRate = parseFloat(document.getElementById('profitRate').value) || 0;
-  const profitAmount = freightWithMarkup * profitRate / 100;
-  const finalPrice = freightWithMarkup + profitAmount + insureFee + stairsFee;
+  const profitAmount = baseFee * profitRate / 100;
+  const finalPrice = baseFee + profitAmount + insureFee + stairsFee;
 
   // 更新显示
   document.getElementById('billableWeight').textContent = billableWeight + ' KG';
@@ -922,7 +928,7 @@ function calculate() {
   }
   detailHtml += `，1KG向上取整后计费重量 <strong>${billableWeight}KG</strong><br>`;
   detailHtml += `• ${detail}<br>`;
-  detailHtml += `• 基础运费四舍五入取整：<strong>${baseFee}元</strong><br>`;
+  detailHtml += `• 基础运费向上取整：<strong>${baseFee}元</strong><br>`;
   if (insureChecked) { detailHtml += `• 保价费：${insureFee}元（费率6‰，含最低收费）<br>`; }
   else { detailHtml += `• 未选保价，含基础保价服务（不额外收费）<br>`; }
   if (stairsChecked) {
@@ -1014,8 +1020,6 @@ function saveRecord() {
     insureFee: document.getElementById('insureFeeRow').style.display !== 'none' ? parseInt(document.getElementById('insureFee').textContent) : 0,
     stairsFee: document.getElementById('stairsFeeRow').style.display !== 'none' ? parseInt(document.getElementById('stairsFeeDisplay').textContent) : 0,
     totalCost: totalCost,
-    markupRate: DEFAULT_MARKUP,
-    markupAmount: baseFee * DEFAULT_MARKUP / 100,
     profitRate: profitRate,
     finalPrice: finalPrice
   };
